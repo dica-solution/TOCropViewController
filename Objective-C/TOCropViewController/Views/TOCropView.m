@@ -256,12 +256,13 @@ typedef NS_ENUM(NSInteger, TOCropViewOverlayEdge) {
         return;
     }
     
-    // Disable from calling again
-    self.initialSetupPerformed = YES;
-    
+  
     //Perform the initial layout of the image
     [self layoutInitialImage];
     
+    // Disable from calling again
+      self.initialSetupPerformed = YES;
+      
     // -- State Restoration --
     
     //If the angle value was previously set before this point, apply it now
@@ -1008,6 +1009,20 @@ typedef NS_ENUM(NSInteger, TOCropViewOverlayEdge) {
     //Make sure we can't make the crop box too small
     cropBoxFrame.size.width  = MAX(cropBoxFrame.size.width, kTOCropViewMinimumBoxSize);
     cropBoxFrame.size.height = MAX(cropBoxFrame.size.height, kTOCropViewMinimumBoxSize);
+    
+   
+
+    if (!self.initialSetupPerformed) {
+        const CGFloat offsetX = 50.0f;
+        const CGFloat offestY = 50.0f;
+        const CGFloat width = 200.0f;
+        const CGFloat height = 50.0f;
+        cropBoxFrame.origin.x = cropBoxFrame.origin.x + offsetX;
+        cropBoxFrame.origin.y = cropBoxFrame.origin.y + offestY;
+        cropBoxFrame.size.width = width;
+        cropBoxFrame.size.height = height;
+    }
+   
     
     _cropBoxFrame = cropBoxFrame;
     
