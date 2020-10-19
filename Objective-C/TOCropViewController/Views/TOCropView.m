@@ -195,7 +195,7 @@ typedef NS_ENUM(NSInteger, TOCropViewOverlayEdge) {
     //Translucency View
     if (NSClassFromString(@"UIVisualEffectView")) {
         self.translucencyEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-        self.translucencyView = [[UIVisualEffectView alloc] initWithEffect:self.translucencyEffect];
+        self.translucencyView = [[UIView alloc] initWithFrame:self.frame];
         self.translucencyView.frame = self.bounds;
     }
     else {
@@ -761,12 +761,13 @@ typedef NS_ENUM(NSInteger, TOCropViewOverlayEdge) {
 
 - (void)toggleTranslucencyViewVisible:(BOOL)visible
 {
-    if (self.dynamicBlurEffect == NO) {
-        self.translucencyView.alpha = visible ? 1.0f : 0.0f;
-    }
-    else {
-        [(UIVisualEffectView *)self.translucencyView setEffect:visible ? self.translucencyEffect : nil];
-    }
+    self.translucencyView.alpha = visible ? 1.0f : 0.0f;
+//    if (self.dynamicBlurEffect == NO) {
+//        self.translucencyView.alpha = visible ? 1.0f : 0.0f;
+//    }
+//    else {
+//        [(UIVisualEffectView *)self.translucencyView setEffect:visible ? self.translucencyEffect : nil];
+//    }
 }
 
 - (void)updateToImageCropFrame:(CGRect)imageCropframe
