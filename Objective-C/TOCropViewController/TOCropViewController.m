@@ -92,7 +92,7 @@ static const CGFloat kTOCropViewControllerToolbarHeight = 44.0f;
 
         // Default initial behaviour
         _aspectRatioPreset = TOCropViewControllerAspectRatioPresetOriginal;
-        _toolbarPosition = TOCropViewControllerToolbarPositionBottom;
+        _toolbarPosition = TOCropViewControllerToolbarPositionTop;
     }
 	
     return self;

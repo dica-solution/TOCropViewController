@@ -33,6 +33,7 @@
 
 @property (nonatomic, strong, readwrite) UIButton *cancelTextButton;
 @property (nonatomic, strong, readwrite) UIButton *cancelIconButton;
+@property (nonatomic, strong, readwrite) UIButton *labelTitle;
 
 @property (nonatomic, strong) UIButton *resetButton;
 @property (nonatomic, strong) UIButton *clampButton;
@@ -77,15 +78,28 @@
 																  resourceBundle,
                                                                   nil)
                      forState:UIControlStateNormal];
-    [_doneTextButton setTitleColor:[UIColor colorWithRed:1.0f green:0.8f blue:0.0f alpha:1.0f] forState:UIControlStateNormal];
+    [_doneTextButton setTitleColor:[UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:1.0f] forState:UIControlStateNormal];
     [_doneTextButton.titleLabel setFont:[UIFont systemFontOfSize:17.0f]];
     [_doneTextButton addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [_doneTextButton sizeToFit];
     [self addSubview:_doneTextButton];
     
+    
+    _labelTitle = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_labelTitle setTitle: _labelTextTitle ?
+         _labelTextTitle : @"Chỉ chọn 1 câu hỏi"
+     
+                     forState:UIControlStateNormal];
+    [_labelTitle setTitleColor:[UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:1.0f] forState:UIControlStateNormal];
+    [_labelTitle.titleLabel setFont:[UIFont systemFontOfSize:17.0f]];
+    [_labelTitle sizeToFit];
+    [self addSubview:_labelTitle];
+    
+
     _doneIconButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [_doneIconButton setImage:[TOCropToolbar doneImage] forState:UIControlStateNormal];
-    [_doneIconButton setTintColor:[UIColor colorWithRed:1.0f green:0.8f blue:0.0f alpha:1.0f]];
+    _doneIconButton.tintColor = [UIColor whiteColor];
+
     [_doneIconButton addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_doneIconButton];
     
@@ -97,6 +111,29 @@
 																	resourceBundle,
                                                                     nil)
                        forState:UIControlStateNormal];
+    
+    
+    [_cancelTextButton setTitleColor:[UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:1.0f] forState:UIControlStateNormal];
+    UIBezierPath *backArrowPath = [UIBezierPath bezierPath];
+       [backArrowPath moveToPoint: CGPointMake(15, 25)];
+       [backArrowPath addLineToPoint: CGPointMake(20, 31)];
+       [backArrowPath addLineToPoint: CGPointMake(15, 35)];
+       [backArrowPath addLineToPoint: CGPointMake(5, 25)];
+       [backArrowPath addLineToPoint: CGPointMake(15, 15)];
+       [backArrowPath addLineToPoint: CGPointMake(20, 20)];
+       [backArrowPath addLineToPoint: CGPointMake(15, 25)];
+       [backArrowPath closePath];
+       
+       CAShapeLayer *backArrowShapeLayer = [CAShapeLayer layer];
+       backArrowShapeLayer.path = [backArrowPath CGPath];
+       backArrowShapeLayer.strokeColor = [[UIColor grayColor] CGColor];
+       backArrowShapeLayer.lineWidth = 1.0;
+       backArrowShapeLayer.fillColor = nil;
+    
+    [_cancelIconButton.layer addSublayer:backArrowShapeLayer];
+    
+    
+    _cancelTextButton.tintColor = [UIColor whiteColor];
     [_cancelTextButton.titleLabel setFont:[UIFont systemFontOfSize:17.0f]];
     [_cancelTextButton addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [_cancelTextButton sizeToFit];
@@ -135,6 +172,9 @@
     [_resetButton setImage:[TOCropToolbar resetImage] forState:UIControlStateNormal];
     [_resetButton addTarget:self action:@selector(buttonTapped:) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:_resetButton];
+    
+   
+
 }
 
 - (void)layoutSubviews
@@ -142,21 +182,28 @@
     [super layoutSubviews];
     
     BOOL verticalLayout = (CGRectGetWidth(self.bounds) < CGRectGetHeight(self.bounds));
-    CGSize boundsSize = self.bounds.size;
+    //CGSize boundsSize = self.bounds.size;
     
-    self.cancelIconButton.hidden = self.cancelButtonHidden || (!verticalLayout);
-    self.cancelTextButton.hidden = self.cancelButtonHidden || (verticalLayout);
-    self.doneIconButton.hidden   = self.doneButtonHidden || (!verticalLayout);
-    self.doneTextButton.hidden   = self.doneButtonHidden || (verticalLayout);
+    [_resetButton setHidden:YES];
+    [_clampButton setHidden:YES];
+    [_rotateButton setHidden:YES];
+    [_rotateClockwiseButton setHidden:YES];
+    [_rotateCounterclockwiseButton setHidden:YES];
 
-    CGRect frame = self.bounds;
-    frame.origin.x -= self.backgroundViewOutsets.left;
-    frame.size.width += self.backgroundViewOutsets.left;
-    frame.size.width += self.backgroundViewOutsets.right;
-    frame.origin.y -= self.backgroundViewOutsets.top;
-    frame.size.height += self.backgroundViewOutsets.top;
-    frame.size.height += self.backgroundViewOutsets.bottom;
-    self.backgroundView.frame = frame;
+    [_cancelTextButton setHidden:YES];
+    [_doneTextButton setHidden:YES];
+    
+    [_cancelIconButton setHidden:NO];
+    [_cancelIconButton setHidden:NO];
+   
+    CGRect bgFrame = self.bounds;
+    bgFrame.origin.x -= self.backgroundViewOutsets.left;
+    bgFrame.size.width += self.backgroundViewOutsets.left;
+    bgFrame.size.width += self.backgroundViewOutsets.right;
+    bgFrame.origin.y -= self.backgroundViewOutsets.top;
+    bgFrame.size.height += self.backgroundViewOutsets.top;
+    bgFrame.size.height += self.backgroundViewOutsets.bottom;
+    self.backgroundView.frame = bgFrame;
     
 #if TOCROPTOOLBAR_DEBUG_SHOWING_BUTTONS_CONTAINER_RECT
     static UIView *containerView = nil;
@@ -167,111 +214,173 @@
         [self addSubview:containerView];
     }
 #endif
-    
-    if (verticalLayout == NO) {
-        CGFloat insetPadding = 10.0f;
-        
-        // Work out the cancel button frame
-        CGRect frame = CGRectZero;
-        frame.size.height = 44.0f;
-        frame.size.width = MIN(self.frame.size.width / 3.0, self.cancelTextButton.frame.size.width);
-
-        //If normal layout, place on the left side, else place on the right
-        if (self.reverseContentLayout == NO) {
-            frame.origin.x = insetPadding;
-        }
-        else {
-            frame.origin.x = boundsSize.width - (frame.size.width + insetPadding);
-        }
-        self.cancelTextButton.frame = frame;
-        
-        // Work out the Done button frame
-        frame.size.width = MIN(self.frame.size.width / 3.0, self.doneTextButton.frame.size.width);
-        
-        if (self.reverseContentLayout == NO) {
-            frame.origin.x = boundsSize.width - (frame.size.width + insetPadding);
-        }
-        else {
-            frame.origin.x = insetPadding;
-        }
-        self.doneTextButton.frame = frame;
-        
-        // Work out the frame between the two buttons where we can layout our action buttons
-        CGFloat x = self.reverseContentLayout ? CGRectGetMaxX(self.doneTextButton.frame) : CGRectGetMaxX(self.cancelTextButton.frame);
-        CGFloat width = 0.0f;
-        
-        if (self.reverseContentLayout == NO) {
-            width = CGRectGetMinX(self.doneTextButton.frame) - CGRectGetMaxX(self.cancelTextButton.frame);
-        }
-        else {
-            width = CGRectGetMinX(self.cancelTextButton.frame) - CGRectGetMaxX(self.doneTextButton.frame);
-        }
-        
-        CGRect containerRect = CGRectIntegral((CGRect){x,frame.origin.y,width,44.0f});
-
-#if TOCROPTOOLBAR_DEBUG_SHOWING_BUTTONS_CONTAINER_RECT
-        containerView.frame = containerRect;
-#endif
-        
-        CGSize buttonSize = (CGSize){44.0f,44.0f};
-        
-        NSMutableArray *buttonsInOrderHorizontally = [NSMutableArray new];
-        if (!self.rotateCounterclockwiseButtonHidden) {
-            [buttonsInOrderHorizontally addObject:self.rotateCounterclockwiseButton];
-        }
-        
-        if (!self.resetButtonHidden) {
-            [buttonsInOrderHorizontally addObject:self.resetButton];
-        }
-        
-        if (!self.clampButtonHidden) {
-            [buttonsInOrderHorizontally addObject:self.clampButton];
-        }
-        
-        if (!self.rotateClockwiseButtonHidden) {
-            [buttonsInOrderHorizontally addObject:self.rotateClockwiseButton];
-        }
-        [self layoutToolbarButtons:buttonsInOrderHorizontally withSameButtonSize:buttonSize inContainerRect:containerRect horizontally:YES];
-    }
-    else {
+    if(verticalLayout == NO){
         CGRect frame = CGRectZero;
         frame.size.height = 44.0f;
         frame.size.width = 44.0f;
         frame.origin.y = CGRectGetHeight(self.bounds) - 44.0f;
         self.cancelIconButton.frame = frame;
         
-        frame.origin.y = self.statusBarHeightInset;
+        frame.origin.y = CGRectGetHeight(self.bounds) - 44.0f;
+        frame.origin.x = CGRectGetWidth(self.bounds) - 44.0f;
         frame.size.width = 44.0f;
         frame.size.height = 44.0f;
         self.doneIconButton.frame = frame;
         
-        CGRect containerRect = (CGRect){0,CGRectGetMaxY(self.doneIconButton.frame),44.0f,CGRectGetMinY(self.cancelIconButton.frame)-CGRectGetMaxY(self.doneIconButton.frame)};
         
-#if TOCROPTOOLBAR_DEBUG_SHOWING_BUTTONS_CONTAINER_RECT
-        containerView.frame = containerRect;
-#endif
+        frame.origin.y = CGRectGetHeight(self.bounds) - 44.0f;
+        frame.origin.x = 44.0f;
+        frame.size.width = CGRectGetWidth(self.bounds) - 88.0f;
+        frame.size.height = 44.0f;
+        self.labelTitle.frame = frame;
         
-        CGSize buttonSize = (CGSize){44.0f,44.0f};
         
-        NSMutableArray *buttonsInOrderVertically = [NSMutableArray new];
-        if (!self.rotateCounterclockwiseButtonHidden) {
-            [buttonsInOrderVertically addObject:self.rotateCounterclockwiseButton];
-        }
+    }else{
+        CGRect frame = CGRectZero;
+        frame.size.height = 44.0f;
+        frame.size.width = 44.0f;
+        frame.origin.y = CGRectGetHeight(self.bounds) - 44.0f;
+        self.cancelIconButton.frame = frame;
         
-        if (!self.resetButtonHidden) {
-            [buttonsInOrderVertically addObject:self.resetButton];
-        }
-        
-        if (!self.clampButtonHidden) {
-            [buttonsInOrderVertically addObject:self.clampButton];
-        }
-        
-        if (!self.rotateClockwiseButtonHidden) {
-            [buttonsInOrderVertically addObject:self.rotateClockwiseButton];
-        }
-        
-        [self layoutToolbarButtons:buttonsInOrderVertically withSameButtonSize:buttonSize inContainerRect:containerRect horizontally:NO];
+        frame.origin.y =  self.statusBarHeightInset;
+        //frame.origin.x = CGRectGetWidth(self.bounds) - 44.0f;
+        frame.size.width = 44.0f;
+        frame.size.height = 44.0f;
+        self.doneIconButton.frame = frame;
     }
+   
+    
+//    CGRect containerRect = (CGRect){0,CGRectGetMaxY(self.doneIconButton.frame),44.0f,CGRectGetMinY(self.cancelIconButton.frame)-CGRectGetMaxY(self.doneIconButton.frame)};
+//
+//#if TOCROPTOOLBAR_DEBUG_SHOWING_BUTTONS_CONTAINER_RECT
+//    containerView.frame = containerRect;
+//#endif
+//
+//    CGSize buttonSize = (CGSize){44.0f,44.0f};
+//
+//    NSMutableArray *buttonsInOrderVertically = [NSMutableArray new];
+//    if (!self.rotateCounterclockwiseButtonHidden) {
+//        [buttonsInOrderVertically addObject:self.rotateCounterclockwiseButton];
+//    }
+//
+//    if (!self.resetButtonHidden) {
+//        [buttonsInOrderVertically addObject:self.resetButton];
+//    }
+//
+//    if (!self.clampButtonHidden) {
+//        [buttonsInOrderVertically addObject:self.clampButton];
+//    }
+//
+//    if (!self.rotateClockwiseButtonHidden) {
+//        [buttonsInOrderVertically addObject:self.rotateClockwiseButton];
+//    }
+//
+//    [self layoutToolbarButtons:buttonsInOrderVertically withSameButtonSize:buttonSize inContainerRect:containerRect horizontally:NO];
+    
+//    if (verticalLayout == NO) {
+//        CGFloat insetPadding = 10.0f;
+//
+//        // Work out the cancel button frame
+//        CGRect frame = CGRectZero;
+//        frame.size.height = 44.0f;
+//        frame.size.width = MIN(self.frame.size.width / 3.0, self.cancelTextButton.frame.size.width);
+//
+//        //If normal layout, place on the left side, else place on the right
+//        if (self.reverseContentLayout == NO) {
+//            frame.origin.x = insetPadding;
+//        }
+//        else {
+//            frame.origin.x = boundsSize.width - (frame.size.width + insetPadding);
+//        }
+//        self.cancelTextButton.frame = frame;
+//
+//        // Work out the Done button frame
+//        frame.size.width = MIN(self.frame.size.width / 3.0, self.doneTextButton.frame.size.width);
+//
+//        if (self.reverseContentLayout == NO) {
+//            frame.origin.x = boundsSize.width - (frame.size.width + insetPadding);
+//        }
+//        else {
+//            frame.origin.x = insetPadding;
+//        }
+//        self.doneTextButton.frame = frame;
+//
+//        // Work out the frame between the two buttons where we can layout our action buttons
+//        CGFloat x = self.reverseContentLayout ? CGRectGetMaxX(self.doneTextButton.frame) : CGRectGetMaxX(self.cancelTextButton.frame);
+//        CGFloat width = 0.0f;
+//
+//        if (self.reverseContentLayout == NO) {
+//            width = CGRectGetMinX(self.doneTextButton.frame) - CGRectGetMaxX(self.cancelTextButton.frame);
+//        }
+//        else {
+//            width = CGRectGetMinX(self.cancelTextButton.frame) - CGRectGetMaxX(self.doneTextButton.frame);
+//        }
+//
+//        CGRect containerRect = CGRectIntegral((CGRect){x,frame.origin.y,width,44.0f});
+//
+//#if TOCROPTOOLBAR_DEBUG_SHOWING_BUTTONS_CONTAINER_RECT
+//        containerView.frame = containerRect;
+//#endif
+//
+//        CGSize buttonSize = (CGSize){44.0f,44.0f};
+//
+//        NSMutableArray *buttonsInOrderHorizontally = [NSMutableArray new];
+//        if (!self.rotateCounterclockwiseButtonHidden) {
+//            [buttonsInOrderHorizontally addObject:self.rotateCounterclockwiseButton];
+//        }
+//
+//        if (!self.resetButtonHidden) {
+//            [buttonsInOrderHorizontally addObject:self.resetButton];
+//        }
+//
+//        if (!self.clampButtonHidden) {
+//            [buttonsInOrderHorizontally addObject:self.clampButton];
+//        }
+//
+//        if (!self.rotateClockwiseButtonHidden) {
+//            [buttonsInOrderHorizontally addObject:self.rotateClockwiseButton];
+//        }
+//        [self layoutToolbarButtons:buttonsInOrderHorizontally withSameButtonSize:buttonSize inContainerRect:containerRect horizontally:YES];
+//    }
+//    else {
+//        CGRect frame = CGRectZero;
+//        frame.size.height = 44.0f;
+//        frame.size.width = 44.0f;
+//        frame.origin.y = CGRectGetHeight(self.bounds) - 44.0f;
+//        self.cancelIconButton.frame = frame;
+//
+//        frame.origin.y = self.statusBarHeightInset;
+//        frame.size.width = 44.0f;
+//        frame.size.height = 44.0f;
+//        self.doneIconButton.frame = frame;
+//
+//        CGRect containerRect = (CGRect){0,CGRectGetMaxY(self.doneIconButton.frame),44.0f,CGRectGetMinY(self.cancelIconButton.frame)-CGRectGetMaxY(self.doneIconButton.frame)};
+//
+//#if TOCROPTOOLBAR_DEBUG_SHOWING_BUTTONS_CONTAINER_RECT
+//        containerView.frame = containerRect;
+//#endif
+//
+//        CGSize buttonSize = (CGSize){44.0f,44.0f};
+//
+//        NSMutableArray *buttonsInOrderVertically = [NSMutableArray new];
+//        if (!self.rotateCounterclockwiseButtonHidden) {
+//            [buttonsInOrderVertically addObject:self.rotateCounterclockwiseButton];
+//        }
+//
+//        if (!self.resetButtonHidden) {
+//            [buttonsInOrderVertically addObject:self.resetButton];
+//        }
+//
+//        if (!self.clampButtonHidden) {
+//            [buttonsInOrderVertically addObject:self.clampButton];
+//        }
+//
+//        if (!self.rotateClockwiseButtonHidden) {
+//            [buttonsInOrderVertically addObject:self.rotateClockwiseButton];
+//        }
+//
+//        [self layoutToolbarButtons:buttonsInOrderVertically withSameButtonSize:buttonSize inContainerRect:containerRect horizontally:NO];
+//    }
 }
 
 // The convenience method for calculating button's frame inside of the container rect
@@ -403,6 +512,11 @@
     [_doneTextButton setTitle:_doneTextButtonTitle forState:UIControlStateNormal];
     [_doneTextButton sizeToFit];
 }
+- (void)setTitleTextButtonTitle:(NSString *)titleTextButtonTitle {
+    _labelTextTitle = titleTextButtonTitle;
+    [_labelTitle setTitle:_labelTextTitle forState:UIControlStateNormal];
+    [_labelTitle sizeToFit];
+}
 
 #pragma mark - Image Generation -
 + (UIImage *)doneImage
@@ -427,6 +541,8 @@
     
     return doneImage;
 }
+
+
 
 + (UIImage *)cancelImage
 {
