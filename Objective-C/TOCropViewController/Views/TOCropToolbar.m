@@ -33,7 +33,7 @@
 
 @property (nonatomic, strong, readwrite) UIButton *cancelTextButton;
 @property (nonatomic, strong, readwrite) UIButton *cancelIconButton;
-@property (nonatomic, strong, readwrite) UIButton *labelTitle;
+
 
 @property (nonatomic, strong) UIButton *resetButton;
 @property (nonatomic, strong) UIButton *clampButton;
@@ -84,16 +84,6 @@
     [_doneTextButton sizeToFit];
     [self addSubview:_doneTextButton];
     
-    
-    _labelTitle = [UIButton buttonWithType:UIButtonTypeSystem];
-    [_labelTitle setTitle: _labelTextTitle ?
-         _labelTextTitle : @"Chỉ chọn 1 câu hỏi"
-     
-                     forState:UIControlStateNormal];
-    [_labelTitle setTitleColor:[UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:1.0f] forState:UIControlStateNormal];
-    [_labelTitle.titleLabel setFont:[UIFont systemFontOfSize:17.0f]];
-    [_labelTitle sizeToFit];
-    [self addSubview:_labelTitle];
     
 
     _doneIconButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -226,14 +216,6 @@
         frame.size.width = 44.0f;
         frame.size.height = 44.0f;
         self.doneIconButton.frame = frame;
-        
-        
-        frame.origin.y = CGRectGetHeight(self.bounds) - 44.0f;
-        frame.origin.x = 44.0f;
-        frame.size.width = CGRectGetWidth(self.bounds) - 88.0f;
-        frame.size.height = 44.0f;
-        self.labelTitle.frame = frame;
-        
         
     }else{
         CGRect frame = CGRectZero;
@@ -512,11 +494,7 @@
     [_doneTextButton setTitle:_doneTextButtonTitle forState:UIControlStateNormal];
     [_doneTextButton sizeToFit];
 }
-- (void)setTitleTextButtonTitle:(NSString *)titleTextButtonTitle {
-    _labelTextTitle = titleTextButtonTitle;
-    [_labelTitle setTitle:_labelTextTitle forState:UIControlStateNormal];
-    [_labelTitle sizeToFit];
-}
+
 
 #pragma mark - Image Generation -
 + (UIImage *)doneImage
